@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  srv1:
+    image: service1
+    ports:
+      - "30000:30000"
+    deploy:
+      replicas: 1
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.srv1.rule=Host(`localhost`) && PathPrefix(`/srv1`)"
+      - "traefik.http.services.srv1.loadbalancer.server.port=30000"
+#    networks:
+#      - my-stack_mynetwork
+  srv2:
+    image: service2
+    ports:
+      - "40000:40000"
+    deploy:
+      replicas: 1
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.srv2.rule=Host(`localhost`) && PathPrefix(`/srv2`)"
+      - "traefik.http.services.srv2.loadbalancer.server.port=40000"
+#    networks:
+#      - my-stack_mynetwork
+
+  traefik:
+    image: "traefik:v2.5"
+    container_name: "traefik"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - ./traefik.toml:/etc/traefik/traefik.toml
+      - /var/run/docker.sock:/var/run/docker.sock
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--log=true"
+      - "--log.level=DEBUG"
+    deploy:
+      replicas: 1
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.my-balancer.rule=Host(`localhost`) && PathPrefix(`/my-balancer`)"
+      - "traefik.http.routers.my-balancer.service=my-balancer"
+      - "traefik.http.services.my-balancer.loadbalancer.server.port=80"
+#    networks:
+#      - my-stack_mynetwork
+
+#networks:
+#  my-stack_mynetwork:
+#    driver: bridge

@@ -1,0 +1,24 @@
+http:
+  services:
+    my-balancer:
+      loadBalancer:
+        method: "drr"
+        servers:
+          - url: http://myapp.com:30000
+          - url: http://myapp.com:40000
+
+  routers:
+    my-balancer:
+      entryPoints:
+        - "http"
+      rule: "Path(`/`)"
+      service: "my-balancer"
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+
+api:
+  dashboard: true
+  insecure: true

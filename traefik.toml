@@ -1,0 +1,51 @@
+# Настройки HTTP
+[http]
+
+# Включаем сервисы
+[http.services]
+
+[http.services.my-balancer]
+    [http.services.my-balancer.loadBalancer]
+        # Метод балансировки нагрузки (Dynamic Round Robin)
+        method = "drr"
+    # Перечень серверов, которые балансируются
+    [[http.services.my-balancer.loadBalancer.servers]]
+    url = "http://srv1:30000"
+
+    [[http.services.my-balancer.loadBalancer.servers]]
+    url = "http://srv2:40000"
+
+# точка входа
+[http.routers]
+    [http.routers.my-balancer]
+    entryPoints = ["http"]
+    rule = "Path(`/my-balancer`)"
+    service = "my-balancer"
+
+    [http.routers.srv1]
+    entryPoints = ["http"]
+    rule = "Host(`localhost`) && PathPrefix(`/srv1`)"
+    service = "srv1"
+#    middlewares = ["add-ping"]
+
+    [http.routers.srv2]
+    entryPoints = ["http"]
+    rule = "Host(`localhost`) && PathPrefix(`/srv2`)"
+    service = "srv2"
+#    middlewares = ["add-ping"]
+
+#[http.middlewares.add-ping.stripprefix]
+#prefixes = ["/ping"]
+
+# Настройки провайдера Docker
+[providers]
+
+# Провайдер Docker
+[providers.docker]
+endpoint = "unix:///var/run/docker.sock"
+exposedByDefault = false
+
+# Настройки доступа к дашборду Traefik
+[api]
+dashboard = true
+insecure = true
