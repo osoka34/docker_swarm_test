@@ -1,24 +1,42 @@
+# Настройки HTTP
 http:
+  # Включаем сервисы
   services:
     my-balancer:
       loadBalancer:
+        # Метод балансировки нагрузки (Dynamic Round Robin)
         method: "drr"
-        servers:
-          - url: http://myapp.com:30000
-          - url: http://myapp.com:40000
+      # Перечень серверов, которые балансируются
+      servers:
+        - url: "http://srv1:30000"
+        - url: "http://srv2:40000"
 
+# точка входа
   routers:
     my-balancer:
       entryPoints:
         - "http"
-      rule: "Path(`/`)"
+      rule: "Path(`/my-balancer`)"
       service: "my-balancer"
+    srv1:
+      entryPoints:
+        - "http"
+      rule: "Host(`localhost`) && PathPrefix(`/srv1`)"
+      service: "srv1"
+    srv2:
+      entryPoints:
+        - "http"
+      rule: "Host(`localhost`) && PathPrefix(`/srv2`)"
+      service: "srv2"
 
+# Настройки провайдера Docker
 providers:
+  # Провайдер Docker
   docker:
     endpoint: "unix:///var/run/docker.sock"
     exposedByDefault: false
 
+# Настройки доступа к дашборду Traefik
 api:
   dashboard: true
   insecure: true
